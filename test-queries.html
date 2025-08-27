@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL Learning - Test Queries</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .query-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        
+        .query-code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        
+        .test-button {
+            background: #4299e1;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+        }
+        
+        .test-button:hover {
+            background: #3182ce;
+        }
+        
+        .result {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .success { border-left: 4px solid #48bb78; }
+        .error { border-left: 4px solid #f56565; }
+        
+        .highlight { background: #ffd700; color: #000; padding: 2px 4px; }
+        
+        .ide-link {
+            display: inline-block;
+            background: #38b2ac;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .ide-link:hover {
+            background: #319795;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 GraphQL Learning API - Test Interface</h1>
+        
+        <div class="highlight">
+            <strong>GraphQL Endpoint:</strong> http://localhost:5208/graphql
+        </div>
+        
+        <p><strong>Server Status:</strong> <span id="status">Checking...</span></p>
+        
+        <a href="http://localhost:5208/graphql" target="_blank" class="ide-link">
+            🎯 Open GraphQL IDE (Banana Cake Pop)
+        </a>
+        
+        <p><em>The GraphQL IDE provides auto-completion, schema exploration, and query validation!</em></p>
+        
+        <div class="query-section">
+            <h3>📚 Query 1: Get All Books</h3>
+            <div class="query-code">query GetAllBooks {
+  books {
+    id
+    title
+    isbn
+    pages
+    publishedDate
+    author {
+      firstName
+      lastName
+    }
+    reviews {
+      reviewerName
+      rating
+      comment
+    }
+  }
+}</div>
+            <button class="test-button" onclick="testQuery(1)">Test Query</button>
+            <div id="result1" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="query-section">
+            <h3>👥 Query 2: Get All Authors</h3>
+            <div class="query-code">query GetAllAuthors {
+  authors {
+    id
+    firstName
+    lastName
+    dateOfBirth
+    biography
+    books {
+      title
+      pages
+    }
+  }
+}</div>
+            <button class="test-button" onclick="testQuery(2)">Test Query</button>
+            <div id="result2" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="query-section">
+            <h3>⭐ Query 3: Get All Reviews</h3>
+            <div class="query-code">query GetAllReviews {
+  reviews {
+    id
+    reviewerName
+    rating
+    comment
+    createdAt
+    book {
+      title
+      author {
+        firstName
+        lastName
+      }
+    }
+  }
+}</div>
+            <button class="test-button" onclick="testQuery(3)">Test Query</button>
+            <div id="result3" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="query-section">
+            <h3>🔍 Query 4: Get Specific Author</h3>
+            <div class="query-code">query GetAuthor {
+  author(id: 1) {
+    id
+    firstName
+    lastName
+    dateOfBirth
+    biography
+    books {
+      title
+      isbn
+      publishedDate
+    }
+  }
+}</div>
+            <button class="test-button" onclick="testQuery(4)">Test Query</button>
+            <div id="result4" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="query-section">
+            <h3>➕ Mutation 1: Add New Author</h3>
+            <div class="query-code">mutation AddAuthor {
+  addAuthor(
+    firstName: "Agatha"
+    lastName: "Christie"
+    dateOfBirth: "1890-09-15T00:00:00"
+    biography: "British crime novelist"
+  ) {
+    id
+    firstName
+    lastName
+  }
+}</div>
+            <button class="test-button" onclick="testQuery(5)">Test Mutation</button>
+            <div id="result5" class="result" style="display:none;"></div>
+        </div>
+        
+        <div class="query-section">
+            <h3>📖 Mutation 2: Add New Book</h3>
+            <div class="query-code">mutation AddBook {
+  addBook(
+    title: "Murder on the Orient Express"
+    isbn: "978-0007119318"
+    publishedDate: "1934-01-01T00:00:00"
+    pages: 256
+    authorId: 1
+  ) {
+    id
+    title
+    author {
+      firstName
+      lastName
+    }
+  }
+}</div>
+            <button class="test-button" onclick="testQuery(6)">Test Mutation</button>
+            <div id="result6" class="result" style="display:none;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Check server status
+        fetch('http://localhost:5208/graphql', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: '{ __schema { types { name } } }' })
+        })
+        .then(() => {
+            document.getElementById('status').innerHTML = '<span style="color: green;">✅ Server Running</span>';
+        })
+        .catch(() => {
+            document.getElementById('status').innerHTML = '<span style="color: red;">❌ Server Not Running</span>';
+        });
+        
+        const queries = {
+            1: `query GetAllBooks {
+  books {
+    id
+    title
+    isbn
+    pages
+    publishedDate
+    author {
+      firstName
+      lastName
+    }
+    reviews {
+      reviewerName
+      rating
+      comment
+    }
+  }
+}`,
+            2: `query GetAllAuthors {
+  authors {
+    id
+    firstName
+    lastName
+    dateOfBirth
+    biography
+    books {
+      title
+      pages
+    }
+  }
+}`,
+            3: `query GetAllReviews {
+  reviews {
+    id
+    reviewerName
+    rating
+    comment
+    createdAt
+    book {
+      title
+      author {
+        firstName
+        lastName
+      }
+    }
+  }
+}`,
+            4: `query GetAuthor {
+  author(id: 1) {
+    id
+    firstName
+    lastName
+    dateOfBirth
+    biography
+    books {
+      title
+      isbn
+      publishedDate
+    }
+  }
+}`,
+            5: `mutation AddAuthor {
+  addAuthor(
+    firstName: "Agatha"
+    lastName: "Christie"
+    dateOfBirth: "1890-09-15T00:00:00"
+    biography: "British crime novelist"
+  ) {
+    id
+    firstName
+    lastName
+  }
+}`,
+            6: `mutation AddBook {
+  addBook(
+    title: "Murder on the Orient Express"
+    isbn: "978-0007119318"
+    publishedDate: "1934-01-01T00:00:00"
+    pages: 256
+    authorId: 1
+  ) {
+    id
+    title
+    author {
+      firstName
+      lastName
+    }
+  }
+}`
+        };
+        
+        async function testQuery(queryNum) {
+            const resultDiv = document.getElementById(`result${queryNum}`);
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Loading...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch('http://localhost:5208/graphql', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: queries[queryNum]
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>
