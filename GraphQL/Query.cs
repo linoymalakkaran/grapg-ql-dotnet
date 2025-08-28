@@ -9,6 +9,7 @@ using HotChocolate.Types;
 
 namespace GraphQLSimple.GraphQL
 {
+    [QueryType]
     public class Query
     {
         // Book Queries
