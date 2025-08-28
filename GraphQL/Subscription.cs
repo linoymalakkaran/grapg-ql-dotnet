@@ -4,7 +4,6 @@ using HotChocolate.Types;
 
 namespace GraphQLSimple.GraphQL
 {
-    [SubscriptionType]
     public class Subscription
     {
         /// <summary>
