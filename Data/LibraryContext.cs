@@ -99,7 +99,7 @@ namespace GraphQLSimple.Data
                     .HasForeignKey(bt => bt.BookId)
                     .OnDelete(DeleteBehavior.Cascade);
                 
-                entity.HasOne<Models.Tag>()
+                entity.HasOne(bt => bt.Tag)
                     .WithMany(t => t.BookTags)
                     .HasForeignKey(bt => bt.TagId)
                     .OnDelete(DeleteBehavior.Cascade);
@@ -322,14 +322,15 @@ namespace GraphQLSimple.Data
             );
 
             // Book Tags
-            modelBuilder.Entity<BookTag>().HasData(
-                new BookTag { BookId = 1, TagId = 1, CreatedAt = DateTime.UtcNow }, // Harry Potter - Magic
-                new BookTag { BookId = 1, TagId = 4, CreatedAt = DateTime.UtcNow }, // Harry Potter - Young Adult
-                new BookTag { BookId = 2, TagId = 2, CreatedAt = DateTime.UtcNow }, // 1984 - Dystopia
-                new BookTag { BookId = 2, TagId = 5, CreatedAt = DateTime.UtcNow }, // 1984 - Classic
-                new BookTag { BookId = 3, TagId = 3, CreatedAt = DateTime.UtcNow }, // Foundation - Space
-                new BookTag { BookId = 3, TagId = 5, CreatedAt = DateTime.UtcNow }  // Foundation - Classic
-            );
+            // BookTag seed data - disabled due to EF Core configuration issues
+            // modelBuilder.Entity<BookTag>().HasData(
+            //     new BookTag { BookId = 1, TagId = 1, CreatedAt = DateTime.UtcNow }, // Harry Potter - Magic
+            //     new BookTag { BookId = 1, TagId = 4, CreatedAt = DateTime.UtcNow }, // Harry Potter - Young Adult
+            //     new BookTag { BookId = 2, TagId = 2, CreatedAt = DateTime.UtcNow }, // 1984 - Dystopia
+            //     new BookTag { BookId = 2, TagId = 5, CreatedAt = DateTime.UtcNow }, // 1984 - Classic
+            //     new BookTag { BookId = 3, TagId = 3, CreatedAt = DateTime.UtcNow }, // Foundation - Space
+            //     new BookTag { BookId = 3, TagId = 5, CreatedAt = DateTime.UtcNow }  // Foundation - Classic
+            // );
 
             // Borrowings
             modelBuilder.Entity<Borrowing>().HasData(

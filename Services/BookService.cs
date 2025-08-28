@@ -12,7 +12,6 @@ namespace GraphQLSimple.Services
         Task<Book> CreateAsync(CreateBookInput input);
         Task<Book?> UpdateAsync(UpdateBookInput input);
         Task<bool> DeleteAsync(int id);
-        Task<IQueryable<Book>> SearchAsync(BookFilterInput filter);
         Task<bool> UpdateAvailabilityAsync(int bookId, int copiesChange);
     }
 
@@ -140,61 +139,6 @@ namespace GraphQLSimple.Services
             _context.Books.Remove(book);
             await _context.SaveChangesAsync();
             return true;
-        }
-
-        public Task<IQueryable<Book>> SearchAsync(BookFilterInput filter)
-        {
-            var query = _context.Books
-                .Include(b => b.Author)
-                .Include(b => b.Category)
-                .Include(b => b.Reviews)
-                .Include(b => b.BookTags)
-                    .ThenInclude(bt => bt.Tag)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(filter.Title))
-                query = query.Where(b => b.Title.Contains(filter.Title));
-
-            if (!string.IsNullOrEmpty(filter.ISBN))
-                query = query.Where(b => b.ISBN == filter.ISBN);
-
-            if (filter.AuthorId.HasValue)
-                query = query.Where(b => b.AuthorId == filter.AuthorId);
-
-            if (filter.CategoryId.HasValue)
-                query = query.Where(b => b.CategoryId == filter.CategoryId);
-
-            if (filter.IsAvailable.HasValue)
-                query = query.Where(b => b.IsAvailable == filter.IsAvailable);
-
-            if (filter.MinPrice.HasValue)
-                query = query.Where(b => b.Price >= filter.MinPrice);
-
-            if (filter.MaxPrice.HasValue)
-                query = query.Where(b => b.Price <= filter.MaxPrice);
-
-            if (filter.PublishedAfter.HasValue)
-                query = query.Where(b => b.PublishedDate >= filter.PublishedAfter);
-
-            if (filter.PublishedBefore.HasValue)
-                query = query.Where(b => b.PublishedDate <= filter.PublishedBefore);
-
-            if (!string.IsNullOrEmpty(filter.Language))
-                query = query.Where(b => b.Language == filter.Language);
-
-            if (filter.MinPages.HasValue)
-                query = query.Where(b => b.Pages >= filter.MinPages);
-
-            if (filter.MaxPages.HasValue)
-                query = query.Where(b => b.Pages <= filter.MaxPages);
-
-            if (filter.TagIds != null && filter.TagIds.Any())
-                query = query.Where(b => b.BookTags.Any(bt => filter.TagIds.Contains(bt.TagId)));
-
-            if (filter.MinRating.HasValue)
-                query = query.Where(b => b.Reviews.Any() && b.Reviews.Average(r => r.Rating) >= filter.MinRating);
-
-            return Task.FromResult(query);
         }
 
         public async Task<bool> UpdateAvailabilityAsync(int bookId, int copiesChange)

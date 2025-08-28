@@ -1,29 +1,28 @@
 using Microsoft.EntityFrameworkCore;
 using GraphQLSimple.Data;
 using GraphQLSimple.Models;
+using HotChocolate;
 
 namespace GraphQLSimple.GraphQL.DataLoaders
 {
     public class AuthorByIdDataLoader : BatchDataLoader<int, Author>
     {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
+        private readonly LibraryContext _context;
 
         public AuthorByIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
+            LibraryContext context,
             IBatchScheduler batchScheduler,
             DataLoaderOptions? options = null)
             : base(batchScheduler, options)
         {
-            _dbContextFactory = dbContextFactory;
+            _context = context;
         }
 
         protected override async Task<IReadOnlyDictionary<int, Author>> LoadBatchAsync(
             IReadOnlyList<int> keys,
             CancellationToken cancellationToken)
         {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            return await context.Authors
+            return await _context.Authors
                 .Where(author => keys.Contains(author.Id))
                 .ToDictionaryAsync(author => author.Id, cancellationToken);
         }
@@ -31,28 +30,22 @@ namespace GraphQLSimple.GraphQL.DataLoaders
 
     public class BooksByAuthorIdDataLoader : GroupedDataLoader<int, Book>
     {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
+        private readonly LibraryContext _context;
 
         public BooksByAuthorIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
+            LibraryContext context,
             IBatchScheduler batchScheduler,
             DataLoaderOptions? options = null)
             : base(batchScheduler, options)
         {
-            _dbContextFactory = dbContextFactory;
+            _context = context;
         }
 
         protected override async Task<ILookup<int, Book>> LoadGroupedBatchAsync(
             IReadOnlyList<int> keys,
             CancellationToken cancellationToken)
         {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            var books = await context.Books
-                .Include(b => b.Category)
-                .Include(b => b.Reviews)
-                .Include(b => b.BookTags)
-                    .ThenInclude(bt => bt.Tag)
+            var books = await _context.Books
                 .Where(book => keys.Contains(book.AuthorId))
                 .ToListAsync(cancellationToken);
 
@@ -62,24 +55,22 @@ namespace GraphQLSimple.GraphQL.DataLoaders
 
     public class CategoryByIdDataLoader : BatchDataLoader<int, Category>
     {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
+        private readonly LibraryContext _context;
 
         public CategoryByIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
+            LibraryContext context,
             IBatchScheduler batchScheduler,
             DataLoaderOptions? options = null)
             : base(batchScheduler, options)
         {
-            _dbContextFactory = dbContextFactory;
+            _context = context;
         }
 
         protected override async Task<IReadOnlyDictionary<int, Category>> LoadBatchAsync(
             IReadOnlyList<int> keys,
             CancellationToken cancellationToken)
         {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            return await context.Categories
+            return await _context.Categories
                 .Where(category => keys.Contains(category.Id))
                 .ToDictionaryAsync(category => category.Id, cancellationToken);
         }
@@ -87,26 +78,24 @@ namespace GraphQLSimple.GraphQL.DataLoaders
 
     public class ReviewsByBookIdDataLoader : GroupedDataLoader<int, Review>
     {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
+        private readonly LibraryContext _context;
 
         public ReviewsByBookIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
+            LibraryContext context,
             IBatchScheduler batchScheduler,
             DataLoaderOptions? options = null)
             : base(batchScheduler, options)
         {
-            _dbContextFactory = dbContextFactory;
+            _context = context;
         }
 
         protected override async Task<ILookup<int, Review>> LoadGroupedBatchAsync(
             IReadOnlyList<int> keys,
             CancellationToken cancellationToken)
         {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            var reviews = await context.Reviews
-                .Include(r => r.User)
+            var reviews = await _context.Reviews
                 .Where(review => keys.Contains(review.BookId))
+                .Include(r => r.User)
                 .ToListAsync(cancellationToken);
 
             return reviews.ToLookup(review => review.BookId);
@@ -115,24 +104,22 @@ namespace GraphQLSimple.GraphQL.DataLoaders
 
     public class UserByIdDataLoader : BatchDataLoader<int, User>
     {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
+        private readonly LibraryContext _context;
 
         public UserByIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
+            LibraryContext context,
             IBatchScheduler batchScheduler,
             DataLoaderOptions? options = null)
             : base(batchScheduler, options)
         {
-            _dbContextFactory = dbContextFactory;
+            _context = context;
         }
 
         protected override async Task<IReadOnlyDictionary<int, User>> LoadBatchAsync(
             IReadOnlyList<int> keys,
             CancellationToken cancellationToken)
         {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            return await context.Users
+            return await _context.Users
                 .Where(user => keys.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id, cancellationToken);
         }
@@ -140,114 +127,108 @@ namespace GraphQLSimple.GraphQL.DataLoaders
 
     public class TagsByBookIdDataLoader : GroupedDataLoader<int, Models.Tag>
     {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
+        private readonly LibraryContext _context;
 
         public TagsByBookIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
+            LibraryContext context,
             IBatchScheduler batchScheduler,
             DataLoaderOptions? options = null)
             : base(batchScheduler, options)
         {
-            _dbContextFactory = dbContextFactory;
+            _context = context;
         }
 
         protected override async Task<ILookup<int, Models.Tag>> LoadGroupedBatchAsync(
             IReadOnlyList<int> keys,
             CancellationToken cancellationToken)
         {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            var bookTags = await context.BookTags
-                .Include(bt => bt.Tag)
+            var bookTags = await _context.BookTags
                 .Where(bt => keys.Contains(bt.BookId))
+                .Include(bt => bt.Tag)
                 .ToListAsync(cancellationToken);
 
-            return bookTags
-                .Where(bt => bt.Tag != null)
-                .ToLookup(bt => bt.BookId, bt => bt.Tag);
-        }
-    }
-
-    public class BorrowingsByBookIdDataLoader : GroupedDataLoader<int, Borrowing>
-    {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
-
-        public BorrowingsByBookIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
-            IBatchScheduler batchScheduler,
-            DataLoaderOptions? options = null)
-            : base(batchScheduler, options)
-        {
-            _dbContextFactory = dbContextFactory;
-        }
-
-        protected override async Task<ILookup<int, Borrowing>> LoadGroupedBatchAsync(
-            IReadOnlyList<int> keys,
-            CancellationToken cancellationToken)
-        {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            var borrowings = await context.Borrowings
-                .Include(b => b.User)
-                .Where(borrowing => keys.Contains(borrowing.BookId))
-                .ToListAsync(cancellationToken);
-
-            return borrowings.ToLookup(borrowing => borrowing.BookId);
+            return bookTags.ToLookup(bt => bt.BookId, bt => bt.Tag);
         }
     }
 
     public class BorrowingsByUserIdDataLoader : GroupedDataLoader<int, Borrowing>
     {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
+        private readonly LibraryContext _context;
 
         public BorrowingsByUserIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
+            LibraryContext context,
             IBatchScheduler batchScheduler,
             DataLoaderOptions? options = null)
             : base(batchScheduler, options)
         {
-            _dbContextFactory = dbContextFactory;
+            _context = context;
         }
 
         protected override async Task<ILookup<int, Borrowing>> LoadGroupedBatchAsync(
             IReadOnlyList<int> keys,
             CancellationToken cancellationToken)
         {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            var borrowings = await context.Borrowings
+            var borrowings = await _context.Borrowings
+                .Where(borrowing => keys.Contains(borrowing.UserId))
                 .Include(b => b.Book)
                     .ThenInclude(book => book.Author)
-                .Where(borrowing => keys.Contains(borrowing.UserId))
+                .Include(b => b.User)
                 .ToListAsync(cancellationToken);
 
             return borrowings.ToLookup(borrowing => borrowing.UserId);
         }
     }
 
-    public class ReviewsByUserIdDataLoader : GroupedDataLoader<int, Review>
+    public class BorrowingsByBookIdDataLoader : GroupedDataLoader<int, Borrowing>
     {
-        private readonly IDbContextFactory<LibraryContext> _dbContextFactory;
+        private readonly LibraryContext _context;
 
-        public ReviewsByUserIdDataLoader(
-            IDbContextFactory<LibraryContext> dbContextFactory,
+        public BorrowingsByBookIdDataLoader(
+            LibraryContext context,
             IBatchScheduler batchScheduler,
             DataLoaderOptions? options = null)
             : base(batchScheduler, options)
         {
-            _dbContextFactory = dbContextFactory;
+            _context = context;
+        }
+
+        protected override async Task<ILookup<int, Borrowing>> LoadGroupedBatchAsync(
+            IReadOnlyList<int> keys,
+            CancellationToken cancellationToken)
+        {
+            var borrowings = await _context.Borrowings
+                .Where(borrowing => keys.Contains(borrowing.BookId))
+                .Include(b => b.Book)
+                    .ThenInclude(book => book.Author)
+                .Include(b => b.User)
+                .ToListAsync(cancellationToken);
+
+            return borrowings.ToLookup(borrowing => borrowing.BookId);
+        }
+    }
+
+    public class ReviewsByUserIdDataLoader : GroupedDataLoader<int, Review>
+    {
+        private readonly LibraryContext _context;
+
+        public ReviewsByUserIdDataLoader(
+            LibraryContext context,
+            IBatchScheduler batchScheduler,
+            DataLoaderOptions? options = null)
+            : base(batchScheduler, options)
+        {
+            _context = context;
         }
 
         protected override async Task<ILookup<int, Review>> LoadGroupedBatchAsync(
             IReadOnlyList<int> keys,
             CancellationToken cancellationToken)
         {
-            await using var context = _dbContextFactory.CreateDbContext();
-            
-            var reviews = await context.Reviews
+            var reviews = await _context.Reviews
+                .Where(review => keys.Contains(review.UserId))
                 .Include(r => r.Book)
                     .ThenInclude(b => b.Author)
-                .Where(review => keys.Contains(review.UserId))
+                .Include(r => r.User)
                 .ToListAsync(cancellationToken);
 
             return reviews.ToLookup(review => review.UserId);

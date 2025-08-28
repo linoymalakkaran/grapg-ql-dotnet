@@ -22,13 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add Serilog
 builder.Host.UseSerilog();
 
-// Add Entity Framework with connection pooling
-builder.Services.AddPooledDbContextFactory<LibraryContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=library.db")
-           .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
-           .EnableDetailedErrors(builder.Environment.IsDevelopment()));
-
-// Add regular DbContext for services that need it
+// Add Entity Framework 
 builder.Services.AddDbContext<LibraryContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=library.db")
            .EnableSensitiveDataLogging(builder.Environment.IsDevelopment())
@@ -46,9 +40,9 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 builder.Services.AddHttpContextAccessor();
 
 // Add Services
-builder.Services.AddScoped<BookService>();
-builder.Services.AddScoped<AuthorService>();
-builder.Services.AddScoped<BorrowingService>();
+builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddScoped<IAuthorService, AuthorService>();
+builder.Services.AddScoped<IBorrowingService, BorrowingService>();
 
 // Add GraphQL Server with all advanced features
 builder.Services
@@ -113,21 +107,6 @@ app.UseWebSockets();
 // Add health check endpoint
 app.MapHealthChecks("/health");
 
-// Ensure database is created and seeded
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<LibraryContext>();
-    
-    if (await context.Database.EnsureCreatedAsync())
-    {
-        Log.Information("Database created and seeded successfully");
-    }
-    else
-    {
-        Log.Information("Database already exists");
-    }
-}
-
 // In development, show GraphQL schema SDL
 if (app.Environment.IsDevelopment())
 {
@@ -144,4 +123,29 @@ Log.Information("🎮 GraphQL IDE: /graphql (Development only)");
 Log.Information("📊 Health Check: /health");
 Log.Information("📋 Schema SDL: /schema (Development only)");
 
+// Initialize database
+await InitializeDatabaseAsync(app);
+
 app.Run();
+
+static async Task InitializeDatabaseAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<LibraryContext>();
+    
+    try
+    {
+        if (await context.Database.EnsureCreatedAsync())
+        {
+            Log.Information("Database created and seeded successfully");
+        }
+        else
+        {
+            Log.Information("Database already exists");
+        }
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Failed to initialize database");
+    }
+}

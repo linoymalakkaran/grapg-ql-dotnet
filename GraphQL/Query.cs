@@ -9,7 +9,6 @@ using HotChocolate.Types;
 
 namespace GraphQLSimple.GraphQL
 {
-    [QueryType]
     public class Query
     {
         // Book Queries
@@ -24,16 +23,6 @@ namespace GraphQLSimple.GraphQL
         public async Task<Book?> GetBook(int id, IBookService bookService)
         {
             return await bookService.GetByIdAsync(id);
-        }
-
-        [UseProjection]
-        [UseFiltering]
-        [UseSorting]
-        public async Task<IQueryable<Book>> SearchBooks(
-            BookFilterInput filter, 
-            IBookService bookService)
-        {
-            return await bookService.SearchAsync(filter);
         }
 
         public async Task<IEnumerable<Book>> GetBooksByIds(
@@ -61,16 +50,6 @@ namespace GraphQLSimple.GraphQL
         public async Task<Author?> GetAuthor(int id, IAuthorService authorService)
         {
             return await authorService.GetByIdAsync(id);
-        }
-
-        [UseProjection]
-        [UseFiltering]
-        [UseSorting]
-        public async Task<IQueryable<Author>> SearchAuthors(
-            AuthorFilterInput filter, 
-            IAuthorService authorService)
-        {
-            return await authorService.SearchAsync(filter);
         }
 
         // User Queries

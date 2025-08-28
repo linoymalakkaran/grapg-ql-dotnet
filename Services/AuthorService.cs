@@ -12,7 +12,6 @@ namespace GraphQLSimple.Services
         Task<Author> CreateAsync(CreateAuthorInput input);
         Task<Author?> UpdateAsync(UpdateAuthorInput input);
         Task<bool> DeleteAsync(int id);
-        Task<IQueryable<Author>> SearchAsync(AuthorFilterInput filter);
     }
 
     public class AuthorService : IAuthorService
@@ -102,34 +101,6 @@ namespace GraphQLSimple.Services
             }
 
             return true;
-        }
-
-        public Task<IQueryable<Author>> SearchAsync(AuthorFilterInput filter)
-        {
-            var query = _context.Authors
-                .Include(a => a.Books)
-                    .ThenInclude(b => b.Reviews)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(filter.FirstName))
-                query = query.Where(a => a.FirstName.Contains(filter.FirstName));
-
-            if (!string.IsNullOrEmpty(filter.LastName))
-                query = query.Where(a => a.LastName.Contains(filter.LastName));
-
-            if (!string.IsNullOrEmpty(filter.Nationality))
-                query = query.Where(a => a.Nationality != null && a.Nationality.Contains(filter.Nationality));
-
-            if (filter.IsActive.HasValue)
-                query = query.Where(a => a.IsActive == filter.IsActive);
-
-            if (filter.BornAfter.HasValue)
-                query = query.Where(a => a.DateOfBirth >= filter.BornAfter);
-
-            if (filter.BornBefore.HasValue)
-                query = query.Where(a => a.DateOfBirth <= filter.BornBefore);
-
-            return Task.FromResult(query);
         }
     }
 }
