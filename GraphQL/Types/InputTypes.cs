@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using GraphQLSimple.Models;
+using HotChocolate.Types;
 
 namespace GraphQLSimple.GraphQL.Types
 {
@@ -12,6 +13,7 @@ namespace GraphQLSimple.GraphQL.Types
         
         [Required]
         [StringLength(13)]
+        [GraphQLType(typeof(ISBNType))]
         public string ISBN { get; set; } = string.Empty;
         
         [StringLength(2000)]
@@ -20,6 +22,7 @@ namespace GraphQLSimple.GraphQL.Types
         public DateTime PublishedDate { get; set; }
         
         [Range(1, 10000)]
+        [GraphQLType(typeof(PositiveIntType))]
         public int Pages { get; set; }
         
         [Range(0.01, 9999.99)]
@@ -32,9 +35,11 @@ namespace GraphQLSimple.GraphQL.Types
         public string Language { get; set; } = "English";
         
         [Range(0, 1000)]
+        [GraphQLType(typeof(PositiveIntType))]
         public int CopiesTotal { get; set; }
         
         [Range(0, 1000)]
+        [GraphQLType(typeof(PositiveIntType))]
         public int CopiesAvailable { get; set; }
         
         public int AuthorId { get; set; }
@@ -50,6 +55,7 @@ namespace GraphQLSimple.GraphQL.Types
         public string? Title { get; set; }
         
         [StringLength(13)]
+        [GraphQLType(typeof(ISBNType))]
         public string? ISBN { get; set; }
         
         [StringLength(2000)]
@@ -58,6 +64,7 @@ namespace GraphQLSimple.GraphQL.Types
         public DateTime? PublishedDate { get; set; }
         
         [Range(1, 10000)]
+        [GraphQLType(typeof(PositiveIntType))]
         public int? Pages { get; set; }
         
         [Range(0.01, 9999.99)]
@@ -70,9 +77,11 @@ namespace GraphQLSimple.GraphQL.Types
         public string? Language { get; set; }
         
         [Range(0, 1000)]
+        [GraphQLType(typeof(PositiveIntType))]
         public int? CopiesTotal { get; set; }
         
         [Range(0, 1000)]
+        [GraphQLType(typeof(PositiveIntType))]
         public int? CopiesAvailable { get; set; }
         
         public int? AuthorId { get; set; }
@@ -100,6 +109,7 @@ namespace GraphQLSimple.GraphQL.Types
         public string? Nationality { get; set; }
         
         [EmailAddress]
+        [GraphQLType(typeof(EmailType))]
         public string? Email { get; set; }
     }
 
@@ -122,6 +132,7 @@ namespace GraphQLSimple.GraphQL.Types
         public string? Nationality { get; set; }
         
         [EmailAddress]
+        [GraphQLType(typeof(EmailType))]
         public string? Email { get; set; }
         
         public bool? IsActive { get; set; }
@@ -140,9 +151,11 @@ namespace GraphQLSimple.GraphQL.Types
         
         [Required]
         [EmailAddress]
+        [GraphQLType(typeof(EmailType))]
         public string Email { get; set; } = string.Empty;
         
         [Phone]
+        [GraphQLType(typeof(PhoneType))]
         public string? PhoneNumber { get; set; }
         
         public DateTime DateOfBirth { get; set; }
@@ -164,9 +177,11 @@ namespace GraphQLSimple.GraphQL.Types
         public string? LastName { get; set; }
         
         [EmailAddress]
+        [GraphQLType(typeof(EmailType))]
         public string? Email { get; set; }
         
         [Phone]
+        [GraphQLType(typeof(PhoneType))]
         public string? PhoneNumber { get; set; }
         
         public DateTime? DateOfBirth { get; set; }
@@ -186,6 +201,7 @@ namespace GraphQLSimple.GraphQL.Types
         public int UserId { get; set; }
         
         [Range(1, 5)]
+        [GraphQLType(typeof(PositiveIntType))]
         public int Rating { get; set; }
         
         [StringLength(1000)]
