@@ -14,7 +14,8 @@ namespace GraphQLSimple.GraphQL
         public async Task<Book> CreateBook(
             CreateBookInput input,
             [Service] BookService bookService,
-            [Service] IValidator<CreateBookInput> validator)
+            [Service] IValidator<CreateBookInput> validator,
+            [Service] ITopicEventSender eventSender)
         {
             var validationResult = await validator.ValidateAsync(input);
             if (!validationResult.IsValid)
@@ -22,13 +23,19 @@ namespace GraphQLSimple.GraphQL
                 throw new GraphQLSimple.Extensions.ValidationException(validationResult.Errors.First().ErrorMessage);
             }
 
-            return await bookService.CreateAsync(input);
+            var book = await bookService.CreateAsync(input);
+            
+            // Trigger subscription event
+            await eventSender.SendAsync("BookCreated", book);
+
+            return book;
         }
 
         public async Task<Book?> UpdateBook(
             UpdateBookInput input,
             [Service] BookService bookService,
-            [Service] IValidator<UpdateBookInput> validator)
+            [Service] IValidator<UpdateBookInput> validator,
+            [Service] ITopicEventSender eventSender)
         {
             var validationResult = await validator.ValidateAsync(input);
             if (!validationResult.IsValid)
@@ -36,7 +43,15 @@ namespace GraphQLSimple.GraphQL
                 throw new GraphQLSimple.Extensions.ValidationException(validationResult.Errors.First().ErrorMessage);
             }
 
-            return await bookService.UpdateAsync(input);
+            var book = await bookService.UpdateAsync(input);
+            
+            // Trigger subscription event if update was successful
+            if (book != null)
+            {
+                await eventSender.SendAsync("BookUpdated", book);
+            }
+
+            return book;
         }
 
         public async Task<bool> DeleteBook(

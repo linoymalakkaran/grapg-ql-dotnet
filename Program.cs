@@ -39,6 +39,9 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 // Add HTTP Context Accessor for middleware
 builder.Services.AddHttpContextAccessor();
 
+// Add custom GraphQL middleware services
+builder.Services.AddCustomGraphQLMiddleware();
+
 // Add Services
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
@@ -93,6 +96,10 @@ app.UseCors();
 
 // Use Serilog request logging
 app.UseSerilogRequestLogging();
+
+// Use custom GraphQL middleware (before GraphQL endpoint)
+app.UseGraphQLRateLimiting();
+app.UseCustomGraphQLMiddleware();
 
 // Configure GraphQL endpoint
 app.MapGraphQL("/graphql")
