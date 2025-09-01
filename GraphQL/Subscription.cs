@@ -31,7 +31,15 @@ namespace GraphQLSimple.GraphQL
             => review;
 
         /// <summary>
-        /// Subscribe to borrowing events
+        /// Subscribe to borrowing events (when books are borrowed)
+        /// </summary>
+        [Subscribe]
+        [Topic("BookBorrowed")]
+        public Borrowing OnBookBorrowed([EventMessage] Borrowing borrowing)
+            => borrowing;
+
+        /// <summary>
+        /// Subscribe to borrowing creation events
         /// </summary>
         [Subscribe]
         [Topic("BorrowingCreated")]
@@ -69,6 +77,30 @@ namespace GraphQLSimple.GraphQL
         [Topic("AvailabilityChanged")]
         public BookAvailabilityUpdate OnAvailabilityChanged([EventMessage] BookAvailabilityUpdate update)
             => update;
+
+        /// <summary>
+        /// Subscribe to user-specific notifications
+        /// </summary>
+        [Subscribe]
+        [Topic("UserNotification_{userId}")]
+        public UserNotification OnUserNotification([EventMessage] UserNotification notification, int userId)
+            => notification;
+
+        /// <summary>
+        /// Subscribe to author updates
+        /// </summary>
+        [Subscribe]
+        [Topic("AuthorUpdated")]
+        public Author OnAuthorUpdated([EventMessage] Author author)
+            => author;
+
+        /// <summary>
+        /// Subscribe to book deletion events
+        /// </summary>
+        [Subscribe]
+        [Topic("BookDeleted")]
+        public BookDeletionEvent OnBookDeleted([EventMessage] BookDeletionEvent bookDeletion)
+            => bookDeletion;
     }
 
     // Supporting types for subscriptions
@@ -90,5 +122,36 @@ namespace GraphQLSimple.GraphQL
         public int CopiesTotal { get; set; }
         public bool IsAvailable { get; set; }
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class UserNotification
+    {
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public NotificationType Type { get; set; }
+        public bool IsRead { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+
+    public class BookDeletionEvent
+    {
+        public int BookId { get; set; }
+        public string BookTitle { get; set; } = string.Empty;
+        public string ISBN { get; set; } = string.Empty;
+        public string AuthorName { get; set; } = string.Empty;
+        public DateTime DeletedAt { get; set; } = DateTime.UtcNow;
+        public string DeletedBy { get; set; } = string.Empty;
+    }
+
+    public enum NotificationType
+    {
+        BookDue,
+        BookOverdue,
+        BookAvailable,
+        ReviewPosted,
+        AccountUpdate,
+        SystemNotification
     }
 }

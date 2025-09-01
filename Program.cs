@@ -5,6 +5,7 @@ using GraphQLSimple.Services;
 using GraphQLSimple.Extensions;
 using GraphQLSimple.GraphQL.Types;
 using GraphQLSimple.GraphQL.DataLoaders;
+using GraphQLSimple.GraphQL.Auth;
 using HotChocolate.AspNetCore;
 using HotChocolate.Data;
 using FluentValidation;
@@ -42,6 +43,10 @@ builder.Services.AddHttpContextAccessor();
 // Add custom GraphQL middleware services
 builder.Services.AddCustomGraphQLMiddleware();
 
+// Add Authentication and Authorization services
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthenticationService, SimpleAuthenticationService>();
+
 // Add Services
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthorService, AuthorService>();
@@ -53,6 +58,7 @@ builder.Services
     .AddQueryType<Query>()
     .AddMutationType<Mutation>()
     .AddSubscriptionType<Subscription>()
+    .AddTypeExtension<AuthMutation>()
     .AddType<ISBNType>()
     .AddType<EmailType>()
     .AddType<PhoneType>()

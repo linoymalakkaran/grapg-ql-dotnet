@@ -140,7 +140,9 @@ namespace GraphQLSimple.GraphQL
             
             if (borrowing != null)
             {
+                // Send both events for different subscription purposes
                 await eventSender.SendAsync("BookBorrowed", borrowing);
+                await eventSender.SendAsync("BorrowingCreated", borrowing);
             }
 
             return borrowing;
