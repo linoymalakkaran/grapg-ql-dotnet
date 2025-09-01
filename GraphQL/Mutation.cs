@@ -8,7 +8,7 @@ using HotChocolate.Subscriptions;
 
 namespace GraphQLSimple.GraphQL
 {
-    public class Mutation
+    public partial class Mutation
     {
         // Book Mutations
         public async Task<Book> CreateBook(

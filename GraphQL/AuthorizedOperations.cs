@@ -5,6 +5,7 @@ using GraphQLSimple.Extensions;
 using HotChocolate.Authorization;
 using HotChocolate;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace GraphQLSimple.GraphQL
 {
@@ -84,9 +85,7 @@ namespace GraphQLSimple.GraphQL
             {
                 BookId = bookId,
                 UserId = userId.Value,
-                BorrowedDate = DateTime.UtcNow,
-                DueDate = DateTime.UtcNow.AddDays(14), // 2 weeks loan
-                Status = BorrowingStatus.Active
+                DueDate = DateTime.UtcNow.AddDays(14) // 2 weeks loan
             };
 
             return await borrowingService.CreateAsync(input);
@@ -217,7 +216,7 @@ namespace GraphQLSimple.GraphQL
                 throw new GraphQLException("User not found");
             }
 
-            return await borrowingService.GetByUserIdAsync(userId.Value);
+            return await borrowingService.GetByUserAsync(userId.Value);
         }
 
         /// <summary>

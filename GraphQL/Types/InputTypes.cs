@@ -154,6 +154,10 @@ namespace GraphQLSimple.GraphQL.Types
         [GraphQLType(typeof(EmailType))]
         public string Email { get; set; } = string.Empty;
         
+        // Password hash - for internal use, not exposed in GraphQL schema
+        [GraphQLIgnore]
+        public string PasswordHash { get; set; } = string.Empty;
+        
         [Phone]
         [GraphQLType(typeof(PhoneType))]
         public string? PhoneNumber { get; set; }
@@ -179,6 +183,10 @@ namespace GraphQLSimple.GraphQL.Types
         [EmailAddress]
         [GraphQLType(typeof(EmailType))]
         public string? Email { get; set; }
+        
+        // Password hash - for internal use, not exposed in GraphQL schema
+        [GraphQLIgnore]
+        public string? PasswordHash { get; set; }
         
         [Phone]
         [GraphQLType(typeof(PhoneType))]

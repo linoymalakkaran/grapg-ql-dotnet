@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using GraphQLSimple.Models;
+using GraphQLSimple.Services;
 
 namespace GraphQLSimple.Data
 {
@@ -15,6 +16,11 @@ namespace GraphQLSimple.Data
         public DbSet<Borrowing> Borrowings { get; set; }
         public DbSet<Models.Tag> Tags { get; set; }
         public DbSet<BookTag> BookTags { get; set; }
+        
+        // JWT Authentication related tables
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+        public DbSet<LoginAttempt> LoginAttempts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -367,6 +373,42 @@ namespace GraphQLSimple.Data
                     Notes = "Book is overdue, fine applied"
                 }
             );
+
+            // JWT Authentication entity configurations
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(rt => rt.Id);
+                entity.Property(rt => rt.Token).IsRequired().HasMaxLength(500);
+                entity.HasIndex(rt => rt.Token).IsUnique();
+                
+                entity.HasOne(rt => rt.User)
+                    .WithMany()
+                    .HasForeignKey(rt => rt.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<PasswordResetToken>(entity =>
+            {
+                entity.HasKey(prt => prt.Id);
+                entity.Property(prt => prt.Token).IsRequired().HasMaxLength(500);
+                entity.HasIndex(prt => prt.Token).IsUnique();
+                
+                entity.HasOne(prt => prt.User)
+                    .WithMany()
+                    .HasForeignKey(prt => prt.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<LoginAttempt>(entity =>
+            {
+                entity.HasKey(la => la.Id);
+                entity.Property(la => la.IpAddress).HasMaxLength(45); // IPv6 support
+                
+                entity.HasOne(la => la.User)
+                    .WithMany()
+                    .HasForeignKey(la => la.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
     }
 }

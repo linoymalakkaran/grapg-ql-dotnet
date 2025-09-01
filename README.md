@@ -662,4 +662,13 @@ The application comes with sample data:
 - The SQLite database file (`library.db`) will be created automatically
 - If you get port conflicts, the application will use a different port automatically
 
+## 📚 Additional Documentation
+
+- `TESTING_GUIDE.md` - Comprehensive testing instructions
+- `GRAPHQL_FEATURES.md` - Detailed feature explanations  
+- `SUBSCRIPTIONS_AUTH_GUIDE.md` - Subscription and authentication guide
+- `AUTHORIZATION_SUBSCRIPTION_MECHANICS.md` - **Deep dive into how [Authorize], ClaimsPrincipal, and event flow work**
+- `test-queries.html` - Ready-to-use GraphQL queries
+- `PROJECT_STATUS.md` - Development status and notes
+
 Happy GraphQL learning! 🚀

@@ -10,6 +10,7 @@ namespace GraphQLSimple.Services
         Task<User?> GetByIdAsync(int id);
         Task<User?> GetByEmailAsync(string email);
         Task<IQueryable<User>> GetAllAsync();
+        IQueryable<User> GetAll();
         Task<User> CreateAsync(CreateUserInput input);
         Task<User?> UpdateAsync(UpdateUserInput input);
         Task<bool> DeleteAsync(int id);
@@ -42,7 +43,15 @@ namespace GraphQLSimple.Services
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
         }
 
-        public async Task<IQueryable<User>> GetAllAsync()
+        public Task<IQueryable<User>> GetAllAsync()
+        {
+            IQueryable<User> query = _context.Users
+                .Include(u => u.Reviews)
+                .Include(u => u.Borrowings);
+            return Task.FromResult(query);
+        }
+
+        public IQueryable<User> GetAll()
         {
             return _context.Users
                 .Include(u => u.Reviews)

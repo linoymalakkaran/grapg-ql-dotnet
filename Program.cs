@@ -12,6 +12,9 @@ using FluentValidation;
 using Serilog;
 using System.Reflection;
 using HotChocolate.Subscriptions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -37,6 +40,11 @@ builder.Services.AddAutoMapper(config => {
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+// Add JWT Auth validators
+builder.Services.AddScoped<IValidator<RegisterUserInput>, RegisterUserInputValidator>();
+builder.Services.AddScoped<IValidator<ResetPasswordInput>, ResetPasswordInputValidator>();
+builder.Services.AddScoped<IValidator<ChangePasswordInput>, ChangePasswordInputValidator>();
+
 // Add HTTP Context Accessor for middleware
 builder.Services.AddHttpContextAccessor();
 
@@ -46,6 +54,36 @@ builder.Services.AddCustomGraphQLMiddleware();
 // Add Authentication and Authorization services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthenticationService, SimpleAuthenticationService>();
+builder.Services.AddScoped<IJwtAuthenticationService, JwtAuthenticationService>();
+
+// Add JWT Authentication
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"] ?? "YourVeryLongSecretKeyHere-AtLeast256BitsLong-ForHMACSHA256";
+var key = Encoding.ASCII.GetBytes(secretKey);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false; // Set to true in production
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ValidateIssuer = true,
+        ValidIssuer = jwtSettings["Issuer"] ?? "GraphQLLibraryAPI",
+        ValidateAudience = true,
+        ValidAudience = jwtSettings["Audience"] ?? "GraphQLLibraryClients",
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization();
 
 // Add Services
 builder.Services.AddScoped<IBookService, BookService>();
@@ -55,10 +93,12 @@ builder.Services.AddScoped<IBorrowingService, BorrowingService>();
 // Add GraphQL Server with all advanced features
 builder.Services
     .AddGraphQLServer()
-    .AddQueryType<Query>()
-    .AddMutationType<Mutation>()
+    .AddQueryType<GraphQLSimple.GraphQL.Query>()
+    .AddMutationType<GraphQLSimple.GraphQL.Mutation>()
     .AddSubscriptionType<Subscription>()
     .AddTypeExtension<AuthMutation>()
+    .AddTypeExtension<JwtAuthMutation>()
+    .AddTypeExtension<JwtAuthQuery>()
     .AddType<ISBNType>()
     .AddType<EmailType>()
     .AddType<PhoneType>()
@@ -102,6 +142,10 @@ app.UseCors();
 
 // Use Serilog request logging
 app.UseSerilogRequestLogging();
+
+// Use Authentication and Authorization
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Use custom GraphQL middleware (before GraphQL endpoint)
 app.UseGraphQLRateLimiting();

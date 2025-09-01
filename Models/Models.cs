@@ -159,6 +159,11 @@ namespace GraphQLSimple.Models
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
         
+        // Password hash - not exposed in GraphQL
+        [Required]
+        [StringLength(500)]
+        public string PasswordHash { get; set; } = string.Empty;
+        
         [Phone]
         public string? PhoneNumber { get; set; }
         
